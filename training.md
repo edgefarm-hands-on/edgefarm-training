@@ -18,14 +18,16 @@ style: |
 - [Applikationen Entwickeln und Deployen](#applikationen-entwickeln-und-deployen)
   - [Train Simulator](#train-simulator)
   - [Ausführen auf Entwickler PC](#ausführen-auf-entwickler-pc)
+    - [Repository holen](#repository-holen)
+    - [Optional: Train Simulator lokal starten](#optional-train-simulator-lokal-starten)
+    - [NATS Server starten](#nats-server-starten)
+    - [EdgeFarm Service Module starten](#edgefarm-service-module-starten)
+    - [Applikation ausführen](#applikation-ausführen)
   - [Docker Image](#docker-image)
   - [Datenformat](#datenformat)
   - [Routing](#routing)
   - [Deployment](#deployment)
-    - [Deployment File](#deployment-file)
   - [Nutzung der Daten](#nutzung-der-daten)
-    - [Datenvisualisierung mit Grafana](#datenvisualisierung-mit-grafana)
-    - [Datenexport mit NATS](#datenexport-mit-nats)
 
 ---
 
@@ -80,9 +82,9 @@ Infos werden per Mail zur Verfügung gestellt.
 
 ### VPN Einrichten <!-- omit in toc -->
 
-- WireGuard starten und mit `STRG + -` einen neuen Tunnel erstellen
+- WireGuard starten und mit `STRG + n` einen neuen Tunnel erstellen
 - Namen für die Konfiguration eingeben: e.g. `ci4rail-vpn`
-- Füge den folgenden Inhalt in die Konfigurations Feld:
+- Füge den folgenden Inhalt in das große Feld:
     ```
     [Interface]
     PrivateKey = <VPN Private Key>
@@ -140,25 +142,121 @@ Raspberry Pi:
 ---
 
 ## Ausführen auf Entwickler PC
-
-- Repository: https://github.com/edgefarm/train-simulation
-
-TODO: Ausprobieren
+1. Repository holen
+2. Optional: Train Simulator lokal starten
+3. NATS Server starten
+4. EdgeFarm Service Module starten
+5. Applikation ausführen
 
 ---
 
+<!-- header: Applikationen Entwickeln und Deployen - Ausführen auf Entwickler PC -->
+
+### Repository holen
+Repository mit Beispielen und Simulator clonen:
+```
+git clone git@github.com:edgefarm/train-simulation.git
+```
+
+---
+
+### Optional: Train Simulator lokal starten
+Mit docker-compose hochfahren:
+```bash
+$ cd simulator
+$ docker-compose up 
+```
+
+Füge `mosquitto` to Hosts Datei `C:\Windows\System32\drivers\etc\hosts`:
+```
+127.0.0.1 mosquitto
+```
+
+---
+
+### NATS Server starten
+```bash
+$ docker run -p 4222:4222 \
+             -p 6222:6222 \
+             -p 8222:8222 \
+             --name nats \
+             --network simulator_edgefarm-simulator \
+             -d nats
+```
+
+Füge `nats` to Hosts Datei `C:\Windows\System32\drivers\etc\hosts`:
+```
+127.0.0.1 nats
+```
+
+---
+
+### EdgeFarm Service Module starten
+
+`mqtt-bridge` starten, verbinden auf lokalen MQTT Server:
+```bash
+$ docker run --network simulator_edgefarm-simulator  ci4rail/mqtt-bridge:latest
+```
+
+`mqtt-bridge` starten, verbinden auf MQTT Server auf Raspberry Pi:
+```bash
+$ docker run -e MQTT_SERVER=192.168.24.42:1883 \ 
+             --network simulator_edgefarm-simulator ci4rail/mqtt-bridge:latest
+```
+
+---
+
+Starten von `ads-to-evhub`, welcher das EdgeFarm Service Module `ads-node-module` in der Development Entwicklung ersetzt:
+```bash
+$ docker run -e KAFKA_ADDRESS=<KAFKA_ADDRESS> \
+             -e KAFKA_PASSWORD=Endpoint=<KAFKA_PASSWORD> \
+             --network simulator_edgefarm-simulator ci4rail/ads-to-evhub:latest
+```
+
+---
+
+### Applikation ausführen
+
+Docker Image der Applikation bauen:
+```bash
+$ docker build -t <app name> --build-arg VERSION=main .
+```
+
+Docker Image ausführen:
+```bash
+$ docker run --network simulator_edgefarm-simulator <app name>
+```
+---
+
 ## Docker Image
+1. Lokal bauen und ausführen
+2. Image Pushen
+3. Cross Build
+
+---
+
+<!-- header: Applikationen Entwickeln und Deployen - Docker Image -->
 
 ### Lokal bauen und ausführen <!-- omit in toc -->
 
 Docker Image bauen:
-```
-docker build -t <docker repository>/<image name>[:<tag>] --build-arg VERSION=main .
+```bash
+$ docker build -t <docker repository>/<image name>[:<tag>] --build-arg VERSION=main .
 ```
 
 Docker Image ausführen:
+```bash
+$ docker run <docker repository>/<image name>[:<tag>]
 ```
-docker run <docker repository>/<image name>[:<tag>]
+
+---
+
+
+### Image Pushen <!-- omit in toc -->
+
+Mit Docker Account einloggen:
+```bash
+$ docker login
 ```
 
 Image pushen:
@@ -168,13 +266,16 @@ docker push <docker repository>/<image name>[:<tag>]
 
 ---
 
-<!-- header: Applikationen Entwickeln und Deployen - Docker Image -->
-
 ### Cross Build <!-- omit in toc -->
 
-Bauen und pushen mit buildx:
+Initial:
+```bash
+$ docker buildx create --use
 ```
-docker buildx build --push --platform linux/arm64,linux/amd64 --build-arg VERSION=${VERSION} --tag <docker repository>/<image name>:[:<tag>] .
+
+Bauen und pushen mit buildx:
+```bash
+$ docker buildx build --push --platform linux/arm64,linux/amd64 --build-arg VERSION=main --tag <docker repository>/<image name>:<tag> .
 ```
 
 ---
@@ -263,16 +364,14 @@ Apache Avro:
 ## Deployment 
 1. Deployment File
 2. Deployment ausführen
-3. Deployment status überprüfen
-   1. Per CLI
-   2. Auf dem Device
-4. Deployment löschen
+3. Deployment löschen
+4. Deployment Status überprüfen
 
 ---
 
 <!-- header: Applikationen Entwickeln und Deployen - Deployment -->
 
-### Deployment File
+### Deployment File <!-- omit in toc -->
 
 ```yaml
 ---
@@ -291,6 +390,39 @@ modules:
     envs:
       MQTT_SERVER: 192.168.24.42:1883
 ```
+
+---
+
+### Deployment ausführen <!-- omit in toc -->
+
+```bash
+$ edgefarm applications apply -f <path/to/deployment file>
+```
+
+### Deployment löschen <!-- omit in toc -->
+```bash
+$ edgefarm applications delete deployment <application>
+```
+
+---
+
+### Deployment Status überprüfen <!-- omit in toc -->
+
+Deployments anzeigen per EdgeFarm CLI:
+```bash
+$ edgefarm applications get deployments
+```
+
+Status der Deployments anzeigen per EdgeFarm CLI:
+```bash
+$ edgefarm applications get deployments -o w -m
+```
+
+Auf dem Device kann man den status der laufenden Container sehen:
+```bash
+$ docker ps
+```
+
 ---
 
 ## Nutzung der Daten
@@ -300,7 +432,7 @@ modules:
 
 ---
 
-### Datenvisualisierung mit Grafana
+### Datenvisualisierung mit Grafana <!-- omit in toc -->
 
 - URL: https://<tenant ID>.grafana.edgefarm.io
 - Login mit EdgeFarm Account über `Sign in with Auth0`
@@ -308,7 +440,7 @@ modules:
 
 --- 
 
-### Datenexport mit NATS
+### Datenexport mit NATS <!-- omit in toc -->
 
 Daten via NATS CLI abrufen:
 ```bash
