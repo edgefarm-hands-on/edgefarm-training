@@ -18,11 +18,6 @@ style: |
 - [Applikationen Entwickeln und Deployen](#applikationen-entwickeln-und-deployen)
   - [Train Simulator](#train-simulator)
   - [Ausführen auf Entwickler PC](#ausführen-auf-entwickler-pc)
-    - [Repository holen](#repository-holen)
-    - [Optional: Train Simulator lokal starten](#optional-train-simulator-lokal-starten)
-    - [NATS Server starten](#nats-server-starten)
-    - [EdgeFarm Service Module starten](#edgefarm-service-module-starten)
-    - [Applikation ausführen](#applikation-ausführen)
   - [Docker Image](#docker-image)
   - [Datenformat](#datenformat)
   - [Routing](#routing)
@@ -74,7 +69,7 @@ Benötigte Informationen sind:
 - Account Name
 - Account Password
 - NATs Endpoint Credentials File
-- IoT Device Connection String (zum Ausführen auf Entwickler PC)
+- KAFKA_ADDRESS und KAFKA_PASSWORD (zum Ausführen auf Entwickler PC)
 
 Infos werden per Mail zur Verfügung gestellt.
 
@@ -152,7 +147,7 @@ Raspberry Pi:
 
 <!-- header: Applikationen Entwickeln und Deployen - Ausführen auf Entwickler PC -->
 
-### Repository holen
+### Repository holen <!-- omit in toc -->
 Repository mit Beispielen und Simulator clonen:
 ```
 git clone git@github.com:edgefarm/train-simulation.git
@@ -160,7 +155,7 @@ git clone git@github.com:edgefarm/train-simulation.git
 
 ---
 
-### Optional: Train Simulator lokal starten
+### Optional: Train Simulator lokal starten <!-- omit in toc -->
 Mit docker-compose hochfahren:
 ```bash
 $ cd simulator
@@ -174,7 +169,7 @@ Füge `mosquitto` to Hosts Datei `C:\Windows\System32\drivers\etc\hosts`:
 
 ---
 
-### NATS Server starten
+### NATS Server starten <!-- omit in toc -->
 ```bash
 $ docker run -p 4222:4222 \
              -p 6222:6222 \
@@ -191,7 +186,7 @@ Füge `nats` to Hosts Datei `C:\Windows\System32\drivers\etc\hosts`:
 
 ---
 
-### EdgeFarm Service Module starten
+### EdgeFarm Service Module starten <!-- omit in toc -->
 
 `mqtt-bridge` starten, verbinden auf lokalen MQTT Server:
 ```bash
@@ -215,7 +210,7 @@ $ docker run -e KAFKA_ADDRESS=<KAFKA_ADDRESS> \
 
 ---
 
-### Applikation ausführen
+### Applikation ausführen <!-- omit in toc -->
 
 Docker Image der Applikation bauen:
 ```bash
