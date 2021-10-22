@@ -1,4 +1,4 @@
-# edgefarm.training
+# edgefarm-training
 
 This repository contains the training material for EdgeFarm.
 

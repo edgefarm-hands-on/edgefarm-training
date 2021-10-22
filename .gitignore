@@ -1,2 +1,3 @@
 *.pdf
 .edgefarm-credentials
+natsEndpoint.creds
