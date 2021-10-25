@@ -245,7 +245,6 @@ $ docker run -e KAFKA_ADDRESS=<KAFKA_ADDRESS> \
 ---
 
 ### Applikation ausführen <!-- omit in toc -->
-
 Docker Image der Applikation bauen:
 ```bash
 $ docker build -t <app name> --build-arg VERSION=main .
@@ -258,6 +257,15 @@ $ docker run --network simulator_edgefarm-simulator <app name>
 ---
 
 ## Applikation anpassen, bauen und ausführen
+### Applikation anpassen <!-- omit in toc -->
+
+Beispiele sind im Repository [train-simulation](https://github.com/edgefarm/train-simulation) zu finden
+- Auslesen von Temperatur und weiterleiten der unveränderten daten an EdgeFarm.data
+- Simulation einer Sitzplatz Reservierung inklusive Monitoring
+- Detektieren von Spitzen im vibration signal, zuordnung eines GPS-Standorts und weiterleiten der Daten in EdgeFarm.data
+
+---
+
 ### Lokal bauen und ausführen <!-- omit in toc -->
 
 Im Ordner Docker Image bauen:
