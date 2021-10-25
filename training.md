@@ -5,10 +5,17 @@ paginate: true
 
 style: |
   header, footer {
-    font-size: 25pt;
+    font-size: 20pt;
+  }
+  h1{
+      padding: 0;
+      margin: 0;
+  }
+  h2, h3{
+      padding: 0;
+      margin: 5px;
   }
 ---
-
 
 # Ablauf <!-- omit in toc -->
 - [Entwicklungsumgebung](#entwicklungsumgebung)
@@ -18,58 +25,55 @@ style: |
 - [Applikationen Entwickeln und Deployen](#applikationen-entwickeln-und-deployen)
   - [Train Simulator](#train-simulator)
   - [Ausführen auf Entwickler PC](#ausführen-auf-entwickler-pc)
-  - [Docker Image](#docker-image)
+  - [Applikation anpassen, bauen und ausführen](#applikation-anpassen-bauen-und-ausführen)
   - [Datenformat](#datenformat)
   - [Routing](#routing)
   - [Deployment](#deployment)
   - [Nutzung der Daten](#nutzung-der-daten)
 
 ---
-
 # Entwicklungsumgebung
-1. Benötigte Software
-2. Benötigte Logins
-3. Bereitgestellte Umgebung
+## Benötigte Software
+| Software                                                                                           | Weshalb benötigt?                                                                                                               |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| [WireGuard](https://www.wireguard.com/install/)                                                    | Per VPN auf Edge Device und Train Simulator zugreifen                                                                           |
+| [Docker](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/docker/)                 | Bauen von Applikationen auf dem Entwickler PC <br> Ausführen von Applikationen inklusive Entwicklungsumgebung auf Entwickler PC |
+| [Docker-Compose](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/docker-compose/) | Starten vom Train Simulator auf Entwickler PC                                                                                   |
 
 ---
-<!-- header: Entwicklungsumgebung -->
 
-## Benötigte Software
-1. [WireGuard](https://www.wireguard.com/install/)
-1. [Docker](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/docker/)
-2. [Docker-Compose](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/docker-compose/)
-3. [QEMU](https://qemu.weilnetz.de/w64/)
-4. [EdgeFarm CLI](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/edgefarm-cli/)
-5. [NATS CLI](https://github.com/nats-io/natscli#installation) <!-- omit in toc -->
-6. [git](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/git/) (optional)
+| Software                                                                                       | Weshalb benötigt?                                                                                                                                                                            |
+| ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [QEMU](https://qemu.weilnetz.de/w64/)                                                          | Bauen der Applikationen auf dem Entwickler PC für das Zielsystem                                                                                                                             |
+| [EdgeFarm CLI](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/edgefarm-cli/) | Welche Geräte sind zum ausrollen von Applikationen verfügbar? <br> Sind sie online? <br> Deployment von Applikatinen auf das Edge Device ausführen <br> Status der Deployments auslesen <br> |
+| [NATS CLI](https://github.com/nats-io/natscli#installation)                                    | Datenabgriff vom Datenendpunkt in der Cloud                                                                                                                                                  |
+| [git](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/git/) (optional)        | Automatisieren der Applikations Builds via Github Actions <br> Verwaltung der Software                                                                                                       |
 
 ---
 
 ## Benötigte Logins
-1. [Docker Hub](https://hub.docker.com/signup) (alternativ: andere private registry?)
-2. [GitHub](https://github.com/join) (optional)
+
+| Login                                                                                | Weshalb benötigt?                                                                                                                                   |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Docker Hub](https://hub.docker.com/signup) <br> Alternativ: private Docker Registry | Ablegen der gebauten Applikationen (sog. Docker Images) <br> Edge Device downloaded sich die Docker Images von dieser Stelle und führt sie dann aus |
+| [GitHub](https://github.com/join) (optional)                                         | Verwaltung der Software <br> Automatisieren der Applikations Builds via Github Actions                                                              |
 
 ---
 
 ## Bereitgestellte Umgebung
-1. EdgeFarm Zugänge
-2. VPN Einrichten
-3. Runtimes
-4. Simulator Device
+### EdgeFarm Zugänge <!-- omit in toc -->
+
+| Information                                          | Weshalb benötigt?                                                                             |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| VPN Private Key <br> VPN IP                          | Remote Zugriff auf Bereitgestellte Edge Devices <br> Zugriff über Browser auf Train-Simulator |
+| EdgeFarm Account Name <br> EdgeFarm Account Password | Login Credentials für EdgeFarm CLI und Grafana Oberfläche                                     |
 
 ---
 
-<!-- header: Entwicklungsumgebung - Bereitgestellte Umgebung -->
-
-### EdgeFarm Zugänge <!-- omit in toc -->
-
-Benötigte Informationen sind:
-- VPN Private Key
-- Tenant Name
-- Account Name
-- Account Password
-- NATs Endpoint Credentials File
-- KAFKA_ADDRESS und KAFKA_PASSWORD (zum Ausführen auf Entwickler PC)
+| Information                       | Weshalb benötigt?                                                            |
+| --------------------------------- | ---------------------------------------------------------------------------- |
+| NATs Endpoint Credentials File    | Datenabgriff vom Datenendpunkt in der Cloud                                  |
+| KAFKA_ADDRESS <br> KAFKA_PASSWORD | Ausführen von Applikationen inklusive Entwicklungsumgebung auf Entwickler PC |
 
 Infos werden per Mail zur Verfügung gestellt.
 
@@ -83,7 +87,7 @@ Infos werden per Mail zur Verfügung gestellt.
     ```
     [Interface]
     PrivateKey = <VPN Private Key>
-    Address = 10.7.0.2/24
+    Address = <VPN IP>/24
 
     [Peer]
     PublicKey = 0vmHOS8fZJc3VLGqA9d7e/4XB5VAfcxGOmOXrJYghR0=
@@ -102,8 +106,9 @@ Moducop:
 - User: root
 - Password: cheesebread
 
-Virtual Device: 
+Virtelles Device: 
 - Name: demo_cloud
+- Kann verwendet werden, wenn rechenintensive Anwendungen benötigt werden oder viele Datenvolumen-Intensiven Zugriffe in der Cloud gemacht werden sollen
 
 ---
 
@@ -116,37 +121,66 @@ Raspberry Pi:
 
 ---
 
-<!-- header: "" -->
-
 # Applikationen Entwickeln und Deployen
-1. Train Simulator
-2. Ausführen auf Entwickler PC
-3. Docker Image
-4. Datenformat
-5. Routing
-6. Deployment
-7. Nutzung der Daten
-
----
-
-<!-- header: Applikationen Entwickeln und Deployen -->
-
 ## Train Simulator
+### Übersicht <!-- omit in toc -->
 ![-](images/demo-arch.svg)
 
 ---
 
-## Ausführen auf Entwickler PC
-1. Repository holen
-2. Optional: Train Simulator lokal starten
-3. NATS Server starten
-4. EdgeFarm Service Module starten
-5. Applikation ausführen
+### Was ist Node-Red? <!-- omit in toc -->
+- Flow-Editor im Webbrowser
+- Wird genutzt um Sensordaten zu Simulieren z.B. durch CSV import
+- Sensordaten werden über MQTT bereitgestellt
+
+![-](images/node-red-ui.png)
 
 ---
 
-<!-- header: Applikationen Entwickeln und Deployen - Ausführen auf Entwickler PC -->
+### Was ist MQTT? <!-- omit in toc -->
+Nachrichtenprotokoll für Netzwerke mit geringe Bandbreite und IoT-Geräte
+![-](images/MQTT_Struktur.jpg)
+Quelle: https://www.opc-router.de/was-ist-mqtt/
 
+---
+
+### Was ist Docker? <!-- omit in toc -->
+![-](images/docker-architecture.svg)
+Quelle: https://docs.docker.com/get-started/overview/
+
+---
+
+### Was ist Docker-Compose? <!-- omit in toc -->
+- Ermöglicht automatisiertes hochfahren von mehreren Containern
+- Über eine YAML Datei wird definiert was wie hochgefahren wird
+- Ganze Infrastrukturen können schnell hochgefahren werden
+
+---
+
+### Was ist NATS? <!-- omit in toc -->
+- Messaging System
+- Wird in EdgeFarm für folgendes verwendet:
+  - Modul zu Modul Kommunikation (also auf einem Device)
+  - Device zu Cloud und Cloud zu Device Kommunikation
+  - Bereitstellung eines Datenendpunkts in der Cloud zum Abgriff der Messdaten
+
+---
+
+### EdgeFarm Service Module <!-- omit in toc -->
+- Abstraktion von Funktionalitäten
+- Nutzung über SDK
+
+#### mqtt-brige <!-- omit in toc -->
+- Empfangen von Daten von einem MQTT Server
+- Senden von Daten an einen MQTT Server 
+
+#### ads-node-module <!-- omit in toc -->
+
+- Senden von Daten in die Cloud
+
+---
+
+## Ausführen auf Entwickler PC
 ### Repository holen <!-- omit in toc -->
 Repository mit Beispielen und Simulator clonen:
 ```
@@ -223,18 +257,10 @@ $ docker run --network simulator_edgefarm-simulator <app name>
 ```
 ---
 
-## Docker Image
-1. Lokal bauen und ausführen
-2. Image Pushen
-3. Cross Build
-
----
-
-<!-- header: Applikationen Entwickeln und Deployen - Docker Image -->
-
+## Applikation anpassen, bauen und ausführen
 ### Lokal bauen und ausführen <!-- omit in toc -->
 
-Docker Image bauen:
+Im Ordner Docker Image bauen:
 ```bash
 $ docker build -t <docker repository>/<image name>[:<tag>] --build-arg VERSION=main .
 ```
@@ -247,7 +273,7 @@ $ docker run <docker repository>/<image name>[:<tag>]
 ---
 
 
-### Image Pushen <!-- omit in toc -->
+### Image in Docker Registry uploaden <!-- omit in toc -->
 
 Mit Docker Account einloggen:
 ```bash
@@ -256,7 +282,7 @@ $ docker login
 
 Image pushen:
 ```
-docker push <docker repository>/<image name>[:<tag>]
+docker push <docker repository>/<image name>:<tag>
 ```
 
 ---
@@ -275,8 +301,6 @@ $ docker buildx build --push --platform linux/arm64,linux/amd64 --build-arg VERS
 
 ---
 
-<!-- header: Applikationen Entwickeln und Deployen -->
-
 ## Datenformat
 Apache Avro:
 - Umfangreiche Datenstrukturen
@@ -285,8 +309,6 @@ Apache Avro:
 - Schemas 
 
 ---
-
-<!-- header: Applikationen Entwickeln und Deployen - Datenformat -->
 
 ```
 {
@@ -348,8 +370,6 @@ Apache Avro:
 
 ---
 
-<!-- header: Applikationen Entwickeln und Deployen -->
-
 ## Routing
 
 ![-](images/Routing.drawio.svg)
@@ -363,8 +383,6 @@ Apache Avro:
 4. Deployment Status überprüfen
 
 ---
-
-<!-- header: Applikationen Entwickeln und Deployen - Deployment -->
 
 ### Deployment File <!-- omit in toc -->
 
@@ -415,6 +433,7 @@ $ edgefarm applications get deployments -o w -m
 
 Auf dem Device kann man den status der laufenden Container sehen:
 ```bash
+$ ssh root@192.168.24.19 
 $ docker ps
 ```
 
