@@ -34,7 +34,7 @@ style: |
   - [Bereitgestellte Umgebung](#bereitgestellte-umgebung)
 - [Applikationen Entwickeln und Deployen](#applikationen-entwickeln-und-deployen)
   - [Train Simulator](#train-simulator)
-  - [Ausführen auf Entwickler PC](#ausführen-auf-entwickler-pc)
+  - [Ausführen auf gitpod](#ausführen-auf-gitpod)
   - [Applikation anpassen, bauen und ausführen](#applikation-anpassen-bauen-und-ausführen)
   - [Datenformat](#datenformat)
   - [Routing](#routing)
@@ -46,17 +46,8 @@ style: |
 ## Benötigte Software
 | Software                                                                                           | Weshalb benötigt?                                                                                                               |
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| [Docker](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/docker/)                 | Bauen von Applikationen auf dem Entwickler PC <br> Ausführen von Applikationen inklusive Entwicklungsumgebung auf Entwickler PC |
-| [Docker-Compose](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/docker-compose/) | Starten vom Train Simulator auf Entwickler PC                                                                                   |
-| [QEMU](https://qemu.weilnetz.de/w64/)                                                              | Bauen der Applikationen auf dem Entwickler PC für das Zielsystem                                                                |
+| Browser (z.B. Firefox) | Ausführen von Applikationen in einer Entwicklungsumgebung im Browser  |
 
----
-
-| Software                                                                                       | Weshalb benötigt?                                                                                                                                                                            |
-| ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [EdgeFarm CLI](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/edgefarm-cli/) | Welche Geräte sind zum ausrollen von Applikationen verfügbar? <br> Sind sie online? <br> Deployment von Applikatinen auf das Edge Device ausführen <br> Status der Deployments auslesen <br> |
-| [NATS CLI](https://github.com/nats-io/natscli#installation)                                    | Datenabgriff vom Datenendpunkt in der Cloud                                                                                                                                                  |
-| [git](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/git/) (optional)        | Automatisieren der Applikations Builds via Github Actions <br> Verwaltung der Software                                                                                                       |
 
 ---
 
@@ -65,7 +56,7 @@ style: |
 | Login                                                                                | Weshalb benötigt?                                                                                                                                   |
 | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Docker Hub](https://hub.docker.com/signup) <br> Alternativ: private Docker Registry | Ablegen der gebauten Applikationen (sog. Docker Images) <br> Edge Device downloaded sich die Docker Images von dieser Stelle und führt sie dann aus |
-| [GitHub](https://github.com/join) (optional)                                         | Verwaltung der Software <br> Automatisieren der Applikations Builds via Github Actions                                                              |
+| [GitHub](https://github.com/join) | Verwaltung der Software <br> Automatisieren der Applikations Builds via Github Actions / Bauen der Docker Images für das Zielsystem                                                            |
 
 ---
 
@@ -86,9 +77,6 @@ style: |
 
 Edge Device `ModuCop`:
 - Name:   axolotl
-- Addresse: 192.168.24.19
-- User: root
-- Password: cheesebread
 
 --- 
 
@@ -101,9 +89,9 @@ Virtuelles Device:
 ### Simulator Device <!-- omit in toc -->
 
 Raspberry Pi:
-- Addressed: 192.168.24.42
-- Node Red Oberfläche: http://192.168.24.42:1880/
-- Node Red UI: http://192.168.24.42:1880/ui
+- Name: axolotl-rpi
+- Node Red Oberfläche: 8080-<gitpod URL>/
+- Node Red UI: 8080-<gitpod URL>/ui/
 
 ---
 
@@ -176,7 +164,7 @@ Quelle: https://docs.docker.com/get-started/overview/
 
 ---
 
-## Ausführen auf Entwickler PC
+## Ausführen auf gitpod
 ### Repository holen <!-- omit in toc -->
 Repository mit Beispielen und Simulator clonen:
 ```
