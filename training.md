@@ -15,6 +15,16 @@ style: |
       padding: 0;
       margin: 5px;
   }
+  img[alt="hvac-dashboard"] { 
+  width:  70%; 
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  }
+
+  img[alt="moducop"] { 
+  width:  30%; 
+  }
 ---
 
 # Ablauf <!-- omit in toc -->
@@ -36,15 +46,14 @@ style: |
 ## Benötigte Software
 | Software                                                                                           | Weshalb benötigt?                                                                                                               |
 | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| [WireGuard](https://www.wireguard.com/install/)                                                    | Per VPN auf Edge Device und Train Simulator zugreifen                                                                           |
 | [Docker](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/docker/)                 | Bauen von Applikationen auf dem Entwickler PC <br> Ausführen von Applikationen inklusive Entwicklungsumgebung auf Entwickler PC |
 | [Docker-Compose](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/docker-compose/) | Starten vom Train Simulator auf Entwickler PC                                                                                   |
+| [QEMU](https://qemu.weilnetz.de/w64/)                                                              | Bauen der Applikationen auf dem Entwickler PC für das Zielsystem                                                                |
 
 ---
 
 | Software                                                                                       | Weshalb benötigt?                                                                                                                                                                            |
 | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [QEMU](https://qemu.weilnetz.de/w64/)                                                          | Bauen der Applikationen auf dem Entwickler PC für das Zielsystem                                                                                                                             |
 | [EdgeFarm CLI](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/edgefarm-cli/) | Welche Geräte sind zum ausrollen von Applikationen verfügbar? <br> Sind sie online? <br> Deployment von Applikatinen auf das Edge Device ausführen <br> Status der Deployments auslesen <br> |
 | [NATS CLI](https://github.com/nats-io/natscli#installation)                                    | Datenabgriff vom Datenendpunkt in der Cloud                                                                                                                                                  |
 | [git](https://docs.ci4rail.com/edgefarm/reference-manual/prerequisites/git/) (optional)        | Automatisieren der Applikations Builds via Github Actions <br> Verwaltung der Software                                                                                                       |
@@ -63,50 +72,27 @@ style: |
 ## Bereitgestellte Umgebung
 ### EdgeFarm Zugänge <!-- omit in toc -->
 
-| Information                                          | Weshalb benötigt?                                                                             |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| VPN Private Key <br> VPN IP                          | Remote Zugriff auf Bereitgestellte Edge Devices <br> Zugriff über Browser auf Train-Simulator |
-| EdgeFarm Account Name <br> EdgeFarm Account Password | Login Credentials für EdgeFarm CLI und Grafana Oberfläche                                     |
-
----
-
-| Information                       | Weshalb benötigt?                                                            |
-| --------------------------------- | ---------------------------------------------------------------------------- |
-| NATs Endpoint Credentials File    | Datenabgriff vom Datenendpunkt in der Cloud                                  |
-| KAFKA_ADDRESS <br> KAFKA_PASSWORD | Ausführen von Applikationen inklusive Entwicklungsumgebung auf Entwickler PC |
-
-Infos werden per Mail zur Verfügung gestellt.
-
----
-
-### VPN Einrichten <!-- omit in toc -->
-
-- WireGuard starten und mit `STRG + n` einen neuen Tunnel erstellen
-- Namen für die Konfiguration eingeben: e.g. `ci4rail-vpn`
-- Füge den folgenden Inhalt in das große Feld:
-    ```
-    [Interface]
-    PrivateKey = <VPN Private Key>
-    Address = <VPN IP>/24
-
-    [Peer]
-    PublicKey = 0vmHOS8fZJc3VLGqA9d7e/4XB5VAfcxGOmOXrJYghR0=
-    AllowedIPs = 10.7.0.0/24, 192.168.24.19/32, 192.168.24.42/32
-    Endpoint = 148.251.135.244:51821
-    ```
-- Speichern und Aktivieren der Konfiguration
+| Information                                          | Weshalb benötigt?                                                            |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------- |
+| EdgeFarm Account Name <br> EdgeFarm Account Password | Login Credentials für EdgeFarm CLI und Grafana Oberfläche                    |
+| NATs Endpoint Credentials File                       | Datenabgriff vom Datenendpunkt in der Cloud                                  |
+| KAFKA_ADDRESS <br> KAFKA_PASSWORD                    | Ausführen von Applikationen inklusive Entwicklungsumgebung auf Entwickler PC |
 
 ---
 
 ### Runtimes <!-- omit in toc -->
 
-Moducop:
+![right:50% bg 80%](images/moducop.png)
+
+Edge Device `ModuCop`:
 - Name:   axolotl
 - Addresse: 192.168.24.19
 - User: root
 - Password: cheesebread
 
-Virtelles Device: 
+--- 
+
+Virtuelles Device: 
 - Name: demo_cloud
 - Kann verwendet werden, wenn rechenintensive Anwendungen benötigt werden oder viele Datenvolumen-Intensiven Zugriffe in der Cloud gemacht werden sollen
 
@@ -166,6 +152,16 @@ Quelle: https://docs.docker.com/get-started/overview/
 
 ---
 
+### Was ist Grafana? <!-- omit in toc -->
+- Ermöglicht es Daten in dynamischen interaktiven Dashboards zu visualisieren
+- Moninoring von Systemen
+- Visualisierung von Messdaten
+- Erstellen von Alarmen, wenn Messwerte z.B. einen bestimmten Schwellwert überschreiten
+
+![hvac-dashboard](images/hvac-dashboard.png)
+
+---
+
 ### EdgeFarm Service Module <!-- omit in toc -->
 - Abstraktion von Funktionalitäten
 - Nutzung über SDK
@@ -190,7 +186,7 @@ git clone git@github.com:edgefarm/train-simulation.git
 ---
 
 ### Optional: Train Simulator lokal starten <!-- omit in toc -->
-Mit docker-compose hochfahren:
+Mit docker-compose hochfahren (Muss unter Windows in einer Admin Console ausgeführt werden):
 ```bash
 $ cd simulator
 $ docker-compose up 
@@ -456,6 +452,16 @@ $ docker ps
 
 ### Datenvisualisierung mit Grafana <!-- omit in toc -->
 
+- Ermitteln von `tenant ID`
+  ```bash
+   $ edgefarm applications get deployments
+   +--------+-------------+---------------------+
+    | TENANT | APPLICATION |    CREATION DATE    |
+    +--------+-------------+---------------------+
+    | demo   | basis       | 2021-07-30 10:21:16 |
+    | demo   | hvac        | 2021-07-30 11:57:20 |
+    +--------+-------------+---------------------+
+  ```
 - URL: https://<tenant ID>.grafana.edgefarm.io
 - Login mit EdgeFarm Account über `Sign in with Auth0`
 - Existierende `demo` Dashboards können über `Dashboards > Manage` erreicht werden
