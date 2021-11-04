@@ -35,7 +35,7 @@ style: |
 - [Applikationen Entwickeln und Deployen](#applikationen-entwickeln-und-deployen)
   - [Train Simulator](#train-simulator)
   - [Ausführen auf gitpod](#ausführen-auf-gitpod)
-  - [Applikation anpassen, bauen und ausführen](#applikation-anpassen-bauen-und-ausführen)
+  - [Applikation anpassen und ausführen](#applikation-anpassen-und-ausführen)
   - [Datenformat](#datenformat)
   - [Routing](#routing)
   - [Deployment](#deployment)
@@ -44,9 +44,10 @@ style: |
 ---
 # Entwicklungsumgebung
 ## Benötigte Software
-| Software                                                                                           | Weshalb benötigt?                                                                                                               |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Browser (z.B. Firefox) | Ausführen von Applikationen in einer Entwicklungsumgebung im Browser  |
+| Software                                                                  | Weshalb benötigt?                                                    |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Browser (z.B. Firefox)                                                    | Ausführen von Applikationen in einer Entwicklungsumgebung im Browser |
+| [GitPod Browser Extension](https://www.gitpod.io/docs/browser-extension/) | Einfacheres Öffnen von Github Repositories in GitPod                 |
 
 
 ---
@@ -56,7 +57,8 @@ style: |
 | Login                                                                                | Weshalb benötigt?                                                                                                                                   |
 | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Docker Hub](https://hub.docker.com/signup) <br> Alternativ: private Docker Registry | Ablegen der gebauten Applikationen (sog. Docker Images) <br> Edge Device downloaded sich die Docker Images von dieser Stelle und führt sie dann aus |
-| [GitHub](https://github.com/join) | Verwaltung der Software <br> Automatisieren der Applikations Builds via Github Actions / Bauen der Docker Images für das Zielsystem                                                            |
+| [GitHub](https://github.com/join)                                                    | Verwaltung der Software <br> Automatisieren der Applikations Builds via Github Actions / Bauen der Docker Images für das Zielsystem                 |
+| [GitPod](https://www.gitpod.io/#get-started)                                         | Starten einer Visual Studio Code Entwicklungsumgebung im Browser <br> GitHub Account kann wiederverwendet werden                                    |
 
 ---
 
@@ -165,82 +167,113 @@ Quelle: https://docs.docker.com/get-started/overview/
 ---
 
 ## Ausführen auf gitpod
-### Repository holen <!-- omit in toc -->
-Repository mit Beispielen und Simulator clonen:
+### Repositories forken <!-- omit in toc -->
+> Dieser Schritt ist nur nötig, whenn Änderungen in GitHub persistent gespeichert werden sollen oder wenn ein Cross Build für die Zielplattform erfolgen soll.
+
+Erstelle einen [Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) für die folgendne Repositories (drücke den `Fork`-Button, z.B.: ![-](images/fork.png)):
+* [edgefarm-hands-on/hands-on-trainsim](https://github.com/edgefarm-hands-on/hands-on-trainsim)
+  (this repository)
+* [edgefarm/train-simulation](https://github.com/edgefarm-hands-on/hands-on-trainsim)
+
+---
+
+### GitHub Actions vorbereiten <!-- omit in toc -->
+> Dieser Schritt ist notwendig, wenn Applikationen für die Zielhardware gebaut werden sollen.
+
+1. Gehe in github zum geforkten `train-simulation`-Repository (normalerweise https://github.com/YOURUSERNAME/train-simulation)
+2. Unter dem Repository Namen klicke auf `Settings`
+3. In der linken Sidebar drücke `Secrets`.
+4. Durch drücken auf `New repository secret` füge die folgenden Secrets hinzu, fülle die Werte mit den Docker Hub Zugangsdaten, die im Rahmen der [benötigten Logins](#benötigte-logins) erstellt wurden:
+   1. Name: DOCKER_USERNAME
+   2. Name: DOCKER_PASSWORD
+
+---
+
+### Aufsetzen von Tailscale Secret <!-- omit in toc -->
+
+> Dieser Schritt ist notwendig, wenn Hardware, die im Ci4Rail Büro steht, benutzt werden soll.
+
+1. Gehe zur Tailscale [Admin Seite](https://login.tailscale.com/admin/settings/authkeys) und erstelle einen `Ephemeral Key`
+2. Gehe zur GitPod [Settings Page](https://gitpod.io/variables) und erstelle eine Variable mit dem Namen `TAILSCALE_AUTHKEY` und dem `Ephemeral Key` als Wert
+
+---
+
+### GitPod Starten <!-- omit in toc -->
+
+**Browser Extension installiert:**
+
+Gehe zum (geforkten) `hands-on-trainsim` Github Repository 
+(normalerweise https://github.com/YOURUSERNAME/hands-on-trainsim) und drücke den Gitpod Button ![](images/gitpod.png).
+
+> Falls das Repository nicht geforkt wurde, gehe auf [edgefarm-hands-on/hands-on-trainsim](https://github.com/edgefarm-hands-on/edgefarm-training)
+
+**Ohne Browser Extension:**
+
+Tippe `https://gitpod.io/#YOURUSERNAME/hands-on-trainsim` in den Browser und ersetze `YOURUSERNAME`.
+
+> Falls das Repository nicht geforkt wurde, gehe auf [GitPod edgefarm-hands-on/hands-on-trainsim](https://gitpod.io/edgefarm-hands-on/hands-on-trainsim)
+
+---
+
+### Anpassen Geforkter Repositories <!-- omit in toc -->
+
+Öffne `.gitpod.yml` im `hands-on-trainsim` Repository, passe alle Repositories an, sodass sie auf die geforkten zeigen und commite/pushe die Änderungen.
+
+Nach den Anpassungen, starte einen neuen Workspace.
+
+---
+
+### Connect to EdgeFarm Data <!-- omit in toc -->
+
+Kopiere die Kafka Konfigurations Datei und benenne sie um:
 ```
-git clone git@github.com:edgefarm/train-simulation.git
+cp /workspace/train-simulation/dev-environment/example.kafka.env /workspace/train-simulation/dev-environment/.kafka.env
+```
+
+Füge die Zugangsdaten (bereitgestellt von Ci4Rail GmbH)  in die Datei ein und starte den GitPod Workspace neu.
+
+---
+
+### GitPod Workspace Neu Starten <!-- omit in toc -->
+
+Klicke auf das Hamburger Menü links oben im GitPod und drücke auf `Gitpod: Stop Workspace`
+
+![right:50% bg 70%](images/close-gitpod.png)
+
+---
+
+Wenn das stoppen abgeschlossen ist, öffne den Workspace durch klicken auf `Open Workspace` neu.
+
+![right:50% bg 70%](images/open-gitpod.png)
+
+---
+
+### Nutze das Bereitgestellte Simulator Device (optional) <!-- omit in toc -->
+
+Ändere die Umgebungsvariable `MQTT_SERVER` im File `train-simulation/dev-environment/docker-compose.yaml` sodass sie dem Name des Raspberry Pi Devices entspricht (Bereitgestellt von Ci4Rail GmbH):
+```
+  mqtt-bridge:
+    image: ci4rail/mqtt-bridge:latest
+    networks:
+      - edgefarm-simulator
+    environment:
+      - MQTT_SERVER=<Raspberry Pi Name>:1883
 ```
 
 ---
 
-### Optional: Train Simulator lokal starten <!-- omit in toc -->
-Mit docker-compose hochfahren (Muss unter Windows in einer Admin Console ausgeführt werden):
-```bash
-$ cd simulator
-$ docker-compose up 
-```
+Gehe in die Konsole `dev-environment` und terminiere die Docker-Compose Ausführung mit `STRG + C`.
 
-Füge `mosquitto` to Hosts Datei `C:\Windows\System32\drivers\etc\hosts`:
+![](images/dev-environment-console.png)
+
+Starte es neu mit:
 ```
-127.0.0.1 mosquitto
+docker-compose -f /workspace/train-simulation/dev-environment/docker-compose.yaml up
 ```
 
 ---
 
-### NATS Server starten <!-- omit in toc -->
-```bash
-$ docker run -p 4222:4222 \
-             -p 6222:6222 \
-             -p 8222:8222 \
-             --name nats \
-             --network simulator_edgefarm-simulator \
-             -d nats
-```
-
-Füge `nats` to Hosts Datei `C:\Windows\System32\drivers\etc\hosts`:
-```
-127.0.0.1 nats
-```
-
----
-
-### EdgeFarm Service Module starten <!-- omit in toc -->
-
-`mqtt-bridge` starten, verbinden auf lokalen MQTT Server:
-```bash
-$ docker run --network simulator_edgefarm-simulator  ci4rail/mqtt-bridge:latest
-```
-
-`mqtt-bridge` starten, verbinden auf MQTT Server auf Raspberry Pi:
-```bash
-$ docker run -e MQTT_SERVER=192.168.24.42:1883 \ 
-             --network simulator_edgefarm-simulator ci4rail/mqtt-bridge:latest
-```
-
----
-
-Starten von `ads-to-evhub`, welcher das EdgeFarm Service Module `ads-node-module` in der Development Entwicklung ersetzt:
-```bash
-$ docker run -e KAFKA_ADDRESS=<KAFKA_ADDRESS> \
-             -e KAFKA_PASSWORD=Endpoint=<KAFKA_PASSWORD> \
-             --network simulator_edgefarm-simulator ci4rail/ads-to-evhub:latest
-```
-
----
-
-### Applikation ausführen <!-- omit in toc -->
-Docker Image der Applikation bauen:
-```bash
-$ docker build -t <app name> --build-arg VERSION=main .
-```
-
-Docker Image ausführen:
-```bash
-$ docker run --network simulator_edgefarm-simulator <app name>
-```
----
-
-## Applikation anpassen, bauen und ausführen
+## Applikation anpassen und ausführen
 ### Applikation anpassen <!-- omit in toc -->
 
 Beispiele sind im Repository [train-simulation](https://github.com/edgefarm/train-simulation) zu finden
@@ -250,45 +283,23 @@ Beispiele sind im Repository [train-simulation](https://github.com/edgefarm/trai
 
 ---
 
-### Lokal bauen und ausführen <!-- omit in toc -->
+### Applikation ausführen <!-- omit in toc -->
 
-Im Ordner Docker Image bauen:
-```bash
-$ docker build -t <docker repository>/<image name>[:<tag>] --build-arg VERSION=main .
+Gehe in den Ordner der Applikation der selektierten Beispielanwendung, z.B. `usecase1`:
+```
+cd /workspace/train-simulation/usecase-1/push-temperature
 ```
 
-Docker Image ausführen:
-```bash
-$ docker run <docker repository>/<image name>[:<tag>]
+Installiere die benötigten Bibliotheken:
+```
+pip3 install -r requirements.txt
 ```
 
----
-
-
-### Image in Docker Registry uploaden <!-- omit in toc -->
-
-Mit Docker Account einloggen:
-```bash
-$ docker login
+Gehe in das `src` Verzeichniss, stelle die benötigte Umgebungsvariable bereit und führe die Applikation aus:
 ```
-
-Image pushen:
-```
-docker push <docker repository>/<image name>:<tag>
-```
-
----
-
-### Cross Build <!-- omit in toc -->
-
-Initial:
-```bash
-$ docker buildx create --use
-```
-
-Bauen und pushen mit buildx:
-```bash
-$ docker buildx build --push --platform linux/arm64,linux/amd64 --build-arg VERSION=main --tag <docker repository>/<image name>:<tag> .
+cd src
+export NATS_SERVER=127.0.0.1:4222
+python3 main.py
 ```
 
 ---
@@ -369,10 +380,34 @@ Apache Avro:
 ---
 
 ## Deployment 
-1. Deployment File
-2. Deployment ausführen
-3. Deployment löschen
-4. Deployment Status überprüfen
+1. Cross Build
+2. Deployment File
+3. Deployment ausführen
+4. Deployment löschen
+5. Deployment Status überprüfen
+
+---
+
+### Cross Build <!-- omit in toc -->
+
+#### Setup github actions <!-- omit in toc -->
+
+> Vorbedingung: Geforkte Repositories
+
+1. Gehe auf GitHub zum geforkten `train-simulation`-Repository (normalerweiße https://github.com/YOURUSERNAME/train-simulation)
+2. Unter dem Repository Name klicke auf `Settings`
+3. In der Linken Sidebar klicke auf `Secrets`.
+4. Füge durch klicken auf `New repository secret` die folgenden Secrets hinzu, fülle die Werte mit den Zugansdaten des Docker Hub Accounts erstellt im Schritt [Benötigte Logins](#benötigte-logins):
+   1. Name: DOCKER_USERNAME
+   2. Name: DOCKER_PASSWORD
+
+---
+
+#### Trigger Build <!-- omit in toc -->
+
+Ein Build wird mithilfe von GitHub Actions durch folgende Aktionen getriggert:
+- Push auf main: `DOCKER_USERNAME/<application-name>`
+- Push auf Feature Branch, wenn ein Pull Request auf diesem vorliegt: `DOCKER_USERNAME/dev-<application-name>`
 
 ---
 
@@ -434,7 +469,6 @@ $ docker ps
 ## Nutzung der Daten
 1. Datenvisualisierung mit Grafana
 2. Datenexport mit NATS
-
 
 ---
 
