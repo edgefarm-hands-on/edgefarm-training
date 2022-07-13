@@ -1,0 +1,95 @@
+name: marp-to-pages
+concurrency: marp-to-pages
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - closed
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Copy artifacts
+        run: mkdir build && cp -R img build/img && cp README.md build/README.md
+
+      - name: Marp Build (readme)
+        uses: docker://marpteam/marp-cli:v2.0.4
+        with:
+          args: README.md -o build/index.html
+        env:
+          MARP_USER: root:root
+
+      - name: Marp Build (manifest)
+        uses: docker://marpteam/marp-cli:v2.0.4
+        with:
+          args: manifest.md -o build/manifest.html
+        env:
+          MARP_USER: root:root
+
+      - name: Marp Build (examples)
+        uses: docker://marpteam/marp-cli:v2.0.4
+        with:
+          args: examples.md -o build/examples.html
+        env:
+          MARP_USER: root:root
+
+      - name: Marp Build (architecture)
+        uses: docker://marpteam/marp-cli:v2.0.4
+        with:
+          args: architecture.md -o build/architecture.html
+        env:
+          MARP_USER: root:root
+
+      - name: Marp Build (known_bugs)
+        uses: docker://marpteam/marp-cli:v2.0.4
+        with:
+          args: known_bugs.md -o build/known_bugs.html
+        env:
+          MARP_USER: root:root
+
+      - name: Marp Build (building_images)
+        uses: docker://marpteam/marp-cli:v2.0.4
+        with:
+          args: building_images.md -o build/building_images.html
+        env:
+          MARP_USER: root:root
+
+      - name: Marp Build (local_dev)
+        uses: docker://marpteam/marp-cli:v2.0.4
+        with:
+          args: local_dev.md -o build/local_dev.html
+        env:
+          MARP_USER: root:root
+
+      - run: |
+          # Patch links in index
+          sed -i 's/\.md/\.html/g' build/index.html
+          sed -i 's/\.md/\.html/g' build/manifest.html
+          sed -i 's/\.md/\.html/g' build/examples.html
+          sed -i 's/\.md/\.html/g' build/architecture.html
+          sed -i 's/\.md/\.html/g' build/known_bugs.html
+          sed -i 's/\.md/\.html/g' build/local_dev.html
+          # excluded patching intentionally build/building_images.html
+
+      - name: Deploy preview
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: ./build/
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+
+      - name: Deploy production
+        if: ${{ github.event_name == 'push' }}
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: ./build/
+          clean-exclude: pr-preview/
