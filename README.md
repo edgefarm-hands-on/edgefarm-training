@@ -28,8 +28,11 @@ Welcome to the EdgeFarm training. Here you find everything to get you started us
 ## Content
 
 [Architecture explained](architecture.md): Gives you a basic understanding about the components of EdgeFarm and its dependencies.
+
 [Manifest exaplained](manifest.md): This section explains how to define applications using so called manifest files
+
 [Examples](examples.md): This section contains some examples that can be rolled directly.  
+
 [Known Bugs](known_bugs.md): See the known bugs and current limitation.  
 
 ---
@@ -37,4 +40,5 @@ Welcome to the EdgeFarm training. Here you find everything to get you started us
 ## Appendix
 
 [Local development](local_dev.md): Get's you started developing an application for EdgeFarm locally.
+
 [Building container images exaplained](building_images.md): Get's you started building multi-arch container images to run on your edge node.
