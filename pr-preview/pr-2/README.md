@@ -15,4 +15,4 @@ Welcome to the EdgeFarm training. Here you find everything to get you started us
 [Building container images exaplained](https://edgefarm-hands-on.github.io/edgefarm-training/building_images.html): Get's you started building multi-arch container images to run on your edge node.
 
 
-<img src="img/ci4rail_logo.png" alt="Logo of Ci4Rail" width="40"/>
+<img src="img/ci4rail_logo.png" alt="Logo of Ci4Rail" height="40"/>
