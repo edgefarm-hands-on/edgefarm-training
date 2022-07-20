@@ -32,3 +32,12 @@ style: |
 **Workaround:**
 - To be safe, wait approx. 40 seconds after the connection to DAPR was successfull.
 
+---
+
+**3**: If you delete the network before the application, the application will not terminate properly.
+
+**Workaround:**
+The order of deletion of edge applications and networks must be kept in mind.
+- First delete the application
+- Then delete the network
+
