@@ -27,15 +27,8 @@ style: |
 
 ---
 
-**2**: The first sent data is lost in aggregating jetstreams for approx. 10 seconds after starting up the edge applications.
+**2**: The first sent data is lost in aggregating jetstreams for approx. 30 seconds after starting up the edge applications.
 
 **Workaround:**
-- To be safe, wait approx. 30 seconds after the connection to DAPR was successfull.
+- To be safe, wait approx. 40 seconds after the connection to DAPR was successfull.
 
----
-
-**3.** **TO BE DELETED WHEN FIXED** Aggregate streams are not cleaned up properly. Even after deleting the `application-network` the aggregate streams are not cleaned up
-
-**Workaround:**
-- Either: predefine the correct characteristics of the Stream and never try to change it
-- Or: Delete the network, rename the aggregate jetstream in the manifest and create a new network. Note, that the space of the old aggregate streams are not cleaned up.
